@@ -22,7 +22,7 @@ function out = phase_lags(t, joint_angles, varargin)
         end
     end
 
-    [onsets coms offsets start_indices stop_indices] = get_model_bursts(t, x, 'SpikeThreshold', p.Results.SpikeThreshold);
+    [onsets centroids offsets start_indices stop_indices] = get_model_bursts(t, x, 'SpikeThreshold', p.Results.SpikeThreshold);
     
     pattern = p.Results.Pattern;
     if isempty(pattern)
@@ -30,11 +30,11 @@ function out = phase_lags(t, joint_angles, varargin)
         pattern = gait_pattern(out.n_joints, p.Results.NAllJoints, p.Results.PatternK, p.Results.PatternGait);
     end
     
-    [out.periods out.lags out.data] = periods_and_lags(onsets, coms, offsets, pattern, p.Results.ConnectThreshold, 'AssumeDF50', p.Results.AssumeDF50);
+    [out.periods out.lags out.data] = periods_and_lags(onsets, centroids, offsets, pattern, p.Results.ConnectThreshold, 'AssumeDF50', p.Results.AssumeDF50);
     
     out.data.pattern_joints = 1:out.n_joints;
     
-    out.burst_times = coms';
+    out.burst_times = centroids';
 
     out.data.start_indices = start_indices;
     out.data.stop_indices = stop_indices;
