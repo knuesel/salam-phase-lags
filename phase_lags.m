@@ -26,7 +26,7 @@ function out = phase_lags(t, joint_angles, varargin)
     
     pattern = p.Results.Pattern;
     if isempty(pattern)
-        {out.n_joints, p.Results.NAllJoints, p.Results.PatternK, p.Results.PatternGait}
+        % {out.n_joints, p.Results.NAllJoints, p.Results.PatternK, p.Results.PatternGait}
         pattern = gait_pattern(out.n_joints, p.Results.NAllJoints, p.Results.PatternK, p.Results.PatternGait);
     end
     
