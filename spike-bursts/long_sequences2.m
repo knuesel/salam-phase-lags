@@ -6,7 +6,7 @@ function out = long_sequences2(file, varargin)
     p.addParamValue('Threshold', nan);
     p.addParamValue('TimeRange', []);
     p.addParamValue('VentralRoots', []);
-    p.addParamValue('BurstReference', 'com');
+    p.addParamValue('BurstReference', 'centroid');
     p.addParamValue('PlotTimeWindow', 100);
     p.addParamValue('Basefile', file);
     p.addParamValue('Plot', true);
@@ -61,7 +61,7 @@ function out = long_sequences2(file, varargin)
         end
 
         % Spline timeseries
-        [spline_heights, start, stop, com_x, com_y, surfaces] = spline_com2(t(t_flags), abs(channels(i).values(t_flags)), spline_times, smoothing(i), threshold(i), plotting);
+        [spline_heights, start, stop, centroid_x, centroid_y, surfaces] = spline_centroid2(t(t_flags), abs(channels(i).values(t_flags)), spline_times, smoothing(i), threshold(i), plotting);
         
         if plotting
             ylabel(['VR ' num2str(channels(i).position)]);
@@ -71,15 +71,15 @@ function out = long_sequences2(file, varargin)
         end
         
         spline_data(1:length(spline_heights), i) = spline_heights;
-        coms(1:length(com_x), i) = com_x;
+        centroids(1:length(centroid_x), i) = centroid_x;
         start_indices(1:length(start), i) = start;
         stop_indices(1:length(stop), i) = stop;
         onsets(1:length(start), i) = spline_times(start);
         offsets(1:length(stop), i) = spline_times(stop);
     end
     
-    if strcmp(p.Results.BurstReference, 'com')
-        burst_times = coms;
+    if strcmp(p.Results.BurstReference, 'centroid')
+        burst_times = centroids;
     else
         burst_times = onsets;
     end
@@ -89,7 +89,7 @@ function out = long_sequences2(file, varargin)
     stop_indices(~stop_indices) = nan;
     onsets(~onsets) = nan;
     offsets(~offsets) = nan;
-    coms(~coms) = nan;
+    centroids(~centroids) = nan;
 
     [periods lags data burst_durations] = periods_and_lags(onsets, burst_times, offsets, zeros(length(channels), 1), 1);
     periods = periods';
@@ -112,7 +112,7 @@ function out = long_sequences2(file, varargin)
     out.periods = periods;
     out.lags = lags;
     out.intersegmental_lags = intersegmental_lags;
-    out.coms = coms;
+    out.centroids = centroids;
     out.onsets = onsets;
     out.offsets = offsets;
     out.burst_times = burst_times;

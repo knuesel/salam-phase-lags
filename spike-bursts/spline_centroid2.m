@@ -1,4 +1,4 @@
-function [spline_heights, start_indices, stop_indices, com_x, com_y, surfaces] = spline_com2(t, data, spline_times, smoothing, threshold, plotting)
+function [spline_heights, start_indices, stop_indices, centroid_x, centroid_y, surfaces] = spline_centroid2(t, data, spline_times, smoothing, threshold, plotting)
 
     spline2 = csaps(t, data, smoothing);
     spline_heights = fnval(spline2, spline_times);
@@ -6,7 +6,7 @@ function [spline_heights, start_indices, stop_indices, com_x, com_y, surfaces] =
     [mins maxs peak_to_peak threshold] = filter_min_max(spline_times, spline_heights, threshold);
     [start_indices stop_indices] = burst_start_stop(spline_times, spline_heights, mins, maxs);
     
-    [com_x com_y surfaces] = get_centroid(spline_times, spline_heights, start_indices, stop_indices);
+    [centroid_x centroid_y surfaces] = get_centroid(spline_times, spline_heights, start_indices, stop_indices);
     
     if ~plotting
         return
@@ -35,7 +35,7 @@ function [spline_heights, start_indices, stop_indices, com_x, com_y, surfaces] =
     plot(spline_times, spline_heights, 'color', [.6 0 0], 'linewidth', 2)
     
     % CENTERS OF MASS
-    plot(com_x, com_y, 'o', 'color', [.6 0 0], 'markerfacecolor', [.6 0 0], 'markersize', 5);
+    plot(centroid_x, centroid_y, 'o', 'color', [.6 0 0], 'markerfacecolor', [.6 0 0], 'markersize', 5);
     
     hold off
     
