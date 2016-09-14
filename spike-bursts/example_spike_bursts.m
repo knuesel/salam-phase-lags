@@ -15,12 +15,20 @@
 
     result = process_bursts(channels, 'Smooth', 0.001, 'TimeRange', [400 600]);
 
+    % Print the lags between the channels for each burst
+    lags = result.lags
 
-    % Same as before, but use different smoothing params for both channels and
-    % show only the 'data' plot.  See how the first channel has a red curve
-    % following the green curve more closely (the green curve is not used for
-    % analysis, it shows the result of a simple moving-average filter and is
-    % added to the plot for reference).
+    % Print the intersegmental lags: In this example we process data from
+    % segments 6 and 10, so to find the intersegmental lags, the lags between
+    % channels must be divided by 4.
+    intersegmental_lags = result.intersegmental_lags
+
+
+    % Process data as before, but use different smoothing params for both
+    % channels and show only the 'data' plot.  See how the first channel has a
+    % red curve following the green curve more closely (the green curve is not
+    % used for analysis, it shows the result of a simple moving-average filter
+    % and is added to the plot for reference).
 
     % result = process_bursts(channels, 'Smooth', [0.01 0.001], 'TimeRange', [400 600], 'Plot', 'data');
 
