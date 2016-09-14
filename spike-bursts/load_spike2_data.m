@@ -1,4 +1,4 @@
-function data = load_jm_data(basename, side, roots)
+function data = load_spike2_data(basename, side, roots)
 
     spike2 = load([basename '.mat']);
     spike2_fields = fieldnames(spike2);
