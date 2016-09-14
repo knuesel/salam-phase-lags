@@ -24,6 +24,10 @@
     intersegmental_lags = result.intersegmental_lags
 
 
+    % Same as before but without plotting anything.
+    % result = process_bursts(channels, 'Smooth', 0.001, 'TimeRange', [400 600], 'Plot', 'none');
+
+
     % Process data as before, but use different smoothing params for both
     % channels and show only the 'data' plot.  See how the first channel has a
     % red curve following the green curve more closely (the green curve is not
