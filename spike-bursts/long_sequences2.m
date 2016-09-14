@@ -1,15 +1,13 @@
-function out = long_sequences2(file, varargin)
+function out = long_sequences2(channels, varargin)
 
     p = inputParser;
-    p.addParamValue('Side', 'ipsi');
     p.addParamValue('Smooth', 0.001);
     p.addParamValue('Threshold', nan);
     p.addParamValue('TimeRange', []);
-    p.addParamValue('VentralRoots', []);
     p.addParamValue('BurstReference', 'centroid');
     p.addParamValue('PlotTimeWindow', 100);
-    p.addParamValue('Basefile', file);
     p.addParamValue('Plot', true);
+    p.addParamValue('PlotName', []);
     p.addParamValue('Pdf', true);
     p.addParamValue('SamplingFreq', 50); % Hz
 
@@ -17,9 +15,6 @@ function out = long_sequences2(file, varargin)
 
     plotting = p.Results.Plot;
 
-    channels = load_jm_data(file, p.Results.Side, p.Results.VentralRoots);
-    disp(['Channels: ' num2str([channels.position])]);
-    
     if plotting
         prepare_figures(1:8, 14);
     end
@@ -107,7 +102,7 @@ function out = long_sequences2(file, varargin)
     
     duty_cycles = burst_durations ./ periods;
 
-    out.file = file;
+    out.plot_name = p.Results.PlotName;
     out.ventral_roots = [channels.position];
     out.periods = periods;
     out.lags = lags;
@@ -185,7 +180,7 @@ function out = long_sequences2(file, varargin)
     end
 
     if p.Results.Pdf
-        basefile = p.Results.Basefile;
+        basefile = p.Results.PlotName;
         time_range = [min_time max_time];
         deltat = p.Results.PlotTimeWindow;
         make_pdf(1, time_range, deltat, [basefile '_fit']);

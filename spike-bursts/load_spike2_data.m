@@ -27,7 +27,8 @@ function channels = load_channels(spike2, prefixes, keep)
     
     for i = 1:length(spike2_fields)
         field_name = spike2_fields{i};
-        channel_name = spike2.(field_name).title
+        channel_name = spike2.(field_name).title;
+        disp(['Processing channel ' channel_name]);
         
         for prefix = prefixes
             if length(channel_name) >= length(prefix{1}) && strcmp(channel_name(1:length(prefix{1})), prefix{1})
