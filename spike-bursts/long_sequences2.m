@@ -6,17 +6,20 @@ function out = long_sequences2(channels, varargin)
     p.addParamValue('TimeRange', []);
     p.addParamValue('BurstReference', 'centroid');
     p.addParamValue('PlotTimeWindow', 100);
-    p.addParamValue('Plot', true);
-    p.addParamValue('PlotName', []);
-    p.addParamValue('Pdf', true);
+    p.addParamValue('Plot', 'all'); % 'none, 'data' or 'all'
+    p.addParamValue('Pdf', false);
+    p.addParamValue('PdfPrefix', []);
     p.addParamValue('SamplingFreq', 50); % Hz
 
     p.parse(varargin{:});
 
-    plotting = p.Results.Plot;
+    plotAll = strcmp(p.Results.Plot, 'all');
+    plotData = plotAll || strcmp(p.Results.Plot,'data');
 
-    if plotting
+    if plotAll
         prepare_figures(1:8, 14);
+    elseif plotData
+        prepare_figures(1, 14);
     end
 
     % Determine time range
@@ -50,15 +53,15 @@ function out = long_sequences2(channels, varargin)
         t = [1:channels(i).length] * channels(i).interval;
         t_flags = t >= min_time & t <= max_time;
         
-        if plotting
+        if plotData
             figure(1)
             subplot(length(channels), 1, i);
         end
 
         % Spline timeseries
-        [spline_heights, start, stop, centroid_x, centroid_y, surfaces] = spline_centroid2(t(t_flags), abs(channels(i).values(t_flags)), spline_times, smoothing(i), threshold(i), plotting);
+        [spline_heights, start, stop, centroid_x, centroid_y, surfaces] = spline_centroid2(t(t_flags), abs(channels(i).values(t_flags)), spline_times, smoothing(i), threshold(i), plotData);
         
-        if plotting
+        if plotData
             ylabel(['VR ' num2str(channels(i).position)]);
             if i == length(channels)
                 xlabel('Time [s]');
@@ -102,7 +105,7 @@ function out = long_sequences2(channels, varargin)
     
     duty_cycles = burst_durations ./ periods;
 
-    out.plot_name = p.Results.PlotName;
+    out.pdf_prefix = p.Results.PdfPrefix;
     out.ventral_roots = [channels.position];
     out.periods = periods;
     out.lags = lags;
@@ -115,82 +118,84 @@ function out = long_sequences2(channels, varargin)
     out.median_lag = nanmedian(intersegmental_lags);
     out.duty_cycles = duty_cycles;
     
-    if ~plotting || true
-        return
-    end
-
-    % Period timeseries
-    figure(2)
-    plot_timeseries_median(burst_times, periods, 'Cycle period [s]', @(i) ['VR ' num2str(channels(i).position)], 'ylim', [0 20]);
-    
-    % Phase lag timeseries
-    figure(3)
-    plot_timeseries_median(data.series(1:end - 1, :)', intersegmental_lags * 100, 'Intersegmental phase lag [%]', ...
-                           @(i) ['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)], 'ylim', [-20 20]);
-    
-    % Pattern timeseries
-    figure(4);
-    rows = size(spline_data, 1);
-    plot_data = spline_data - repmat(min(spline_data), rows, 1);
-    ampl = repmat(max(plot_data), rows, 1);
-    % avg = repmat(mean(plot_data), rows, 1);
-    plot_data = plot_data ./ ampl * 2;
-    plot_phase_patterns(spline_times, plot_data, 'JointPositions', [channels.position], 'Pos', data);
-    ylimit = ylim;
-    ylimit(2) = ylimit(2) - 1.5;
-    set(gca, 'yticklabel', [channels.position], 'ylim', ylimit);
-    ylabel('VR');
-    title('Neighboring burst selection (for phase lags)');
-
-    % Original lag timeseries
-    figure(5)
-    plot_timeseries_median(data.series(1:end - 1, :)', lags * 100, 'Phase lag [%]', ...
-                           @(i) ['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)], 'ylim', [-50 50]);
-    
-    % Duty cycles
-    figure(6)
-    plot_timeseries_median(burst_times, duty_cycles * 100, 'Duty cycle [%]', ...
-                           @(i) ['VR ' num2str(channels(i).position)], 'ylim', [0 100]);
-    
-    % Phase lag histograms
-    figure(7)
-    for i = 1:length(channels) - 1
-        subplot(length(channels) - 1, 1, i);
-        hist(intersegmental_lags(:, i) * 100, -20:20);
-        ylabel(['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)]);
-        xlim([-22 22]);
-    
-        if i == 1
-            title('Intersegmental phase lag [%]');
-        end
-    end
-    
-    
-    % Period histograms
-    figure(8)
-    for i = 1:length(channels)
-        subplot(length(channels), 1, i);
-        hist(periods(:, i), 0:0.5:25);
-        ylabel(['VR ' num2str(channels(i).position)]);
-        xlim([0 32]);
+    if plotAll
+        % Period timeseries
+        figure(2)
+        plot_timeseries_median(burst_times, periods, 'Cycle period [s]', @(i) ['VR ' num2str(channels(i).position)], 'ylim', [0 20]);
         
-        if i == 1
-            title('Period [s]');
+        % Phase lag timeseries
+        figure(3)
+        plot_timeseries_median(data.series(1:end - 1, :)', intersegmental_lags * 100, 'Intersegmental phase lag [%]', ...
+                               @(i) ['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)], 'ylim', [-20 20]);
+        
+        % Pattern timeseries
+        figure(4);
+        rows = size(spline_data, 1);
+        plot_data = spline_data - repmat(min(spline_data), rows, 1);
+        ampl = repmat(max(plot_data), rows, 1);
+        % avg = repmat(mean(plot_data), rows, 1);
+        plot_data = plot_data ./ ampl * 2;
+        plot_phase_patterns(spline_times, plot_data, 'JointPositions', [channels.position], 'Pos', data);
+        ylimit = ylim;
+        ylimit(2) = ylimit(2) - 1.5;
+        set(gca, 'yticklabel', [channels.position], 'ylim', ylimit);
+        ylabel('VR');
+        title('Neighboring burst selection (for phase lags)');
+
+        % Original lag timeseries
+        figure(5)
+        plot_timeseries_median(data.series(1:end - 1, :)', lags * 100, 'Phase lag [%]', ...
+                               @(i) ['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)], 'ylim', [-50 50]);
+        
+        % Duty cycles
+        figure(6)
+        plot_timeseries_median(burst_times, duty_cycles * 100, 'Duty cycle [%]', ...
+                               @(i) ['VR ' num2str(channels(i).position)], 'ylim', [0 100]);
+        
+        % Phase lag histograms
+        figure(7)
+        for i = 1:length(channels) - 1
+            subplot(length(channels) - 1, 1, i);
+            hist(intersegmental_lags(:, i) * 100, -20:20);
+            ylabel(['VR ' num2str(channels(i).position) '-' num2str(channels(i + 1).position)]);
+            xlim([-22 22]);
+        
+            if i == 1
+                title('Intersegmental phase lag [%]');
+            end
+        end
+        
+        
+        % Period histograms
+        figure(8)
+        for i = 1:length(channels)
+            subplot(length(channels), 1, i);
+            hist(periods(:, i), 0:0.5:25);
+            ylabel(['VR ' num2str(channels(i).position)]);
+            xlim([0 32]);
+            
+            if i == 1
+                title('Period [s]');
+            end
         end
     end
 
     if p.Results.Pdf
-        basefile = p.Results.PlotName;
+        basefile = p.Results.PdfPrefix;
         time_range = [min_time max_time];
         deltat = p.Results.PlotTimeWindow;
-        make_pdf(1, time_range, deltat, [basefile '_fit']);
-        make_pdf(2, time_range, -1, [basefile '_period']);
-        make_pdf(3, time_range, -1, [basefile '_intersegmental_lag']);
-        make_pdf(4, time_range, deltat, [basefile '_pattern']);
-        make_pdf(5, time_range, -1, [basefile '_lag']);
-        make_pdf(6, time_range, -1, [basefile '_duty_cycle']);
-        make_pdf(7, time_range, -1, [basefile '_intersegmental_lag_hist']);
-        make_pdf(8, time_range, -1, [basefile '_period_hist']);
+        if plotData
+            make_pdf(1, time_range, deltat, [basefile '_fit']);
+        end
+        if plotAll
+            make_pdf(2, time_range, -1, [basefile '_period']);
+            make_pdf(3, time_range, -1, [basefile '_intersegmental_lag']);
+            make_pdf(4, time_range, deltat, [basefile '_pattern']);
+            make_pdf(5, time_range, -1, [basefile '_lag']);
+            make_pdf(6, time_range, -1, [basefile '_duty_cycle']);
+            make_pdf(7, time_range, -1, [basefile '_intersegmental_lag_hist']);
+            make_pdf(8, time_range, -1, [basefile '_period_hist']);
+        end
     end
     
 function plot_timeseries_median(x, y, title_str, ylabel_callback, varargin)
