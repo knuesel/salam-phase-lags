@@ -42,8 +42,7 @@ title('Noisy joint angles (raw data)')
 % then the phase_lags function will not "connect" this oscillation cycle. This
 % avoids having the last cycle of the first segments connected to the previous
 % oscillation cycle.
-out2 = phase_lags(t, joint_angles_noisy, 'Pattern', phase_pattern,
-'ConnectThreshold', 0.5, 'SplineSmooth', 0.99999);
+out2 = phase_lags(t, joint_angles_noisy, 'Pattern', phase_pattern, 'ConnectThreshold', 0.5, 'SplineSmooth', 0.99999);
 
 disp('Lags (noisy):');
 out2.lags
