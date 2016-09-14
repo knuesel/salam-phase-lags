@@ -1,4 +1,4 @@
-function out = long_sequences2(channels, varargin)
+function out = process_bursts(channels, varargin)
 
     p = inputParser;
     p.addParamValue('Smooth', 0.001);
